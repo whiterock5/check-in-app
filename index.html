@@ -31,15 +31,15 @@
                 user: userId
             };
 
-                // try {
+                 try {
                 // ✅ CORS 문제 해결을 위해 OPTIONS 요청 먼저 보내기
-                //await fetch(apiUrl, {
-                //    method: "OPTIONS",
-                //    headers: {
-                //        "Content-Type": "application/json"
-                //    },
-                //    mode: "cors"
-                //});
+                await fetch(apiUrl, {
+                    method: "OPTIONS",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    mode: "cors"
+                });
 
                 // ✅ Lambda에 POST 요청 보내기
                 const response = await fetch(apiUrl, {
