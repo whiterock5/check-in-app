@@ -3,47 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AWS Lambda API 호출</title>
+    <title>출석체크</title>
 </head>
 <body>
-    <h2>AWS Lambda 호출 (POST)</h2>
-    
-    <label for="checkDate">날짜:</label>
-    <input type="date" id="checkDate" required>
-    
-    <label for="userId">사용자 ID:</label>
+    <h2>출석 체크</h2>
+        
+    <label for="userId">Name</label>
     <input type="text" id="userId" placeholder="USER ID 입력" required>
     
-    <button onclick="callLambda()">Lambda 호출</button>
+    <button onclick="callLambda()">출석</button>
 
     <h3>응답 결과:</h3>
     <pre id="response"></pre>
 
     <script>
         async function callLambda() {
-            const checkDate = document.getElementById("checkDate").value;
             const userId = document.getElementById("userId").value;
 
-            if (!checkDate || !userId) {
-                alert("모든 입력값을 입력하세요.");
+            if (!userId) {
+                alert("사용자 ID를 입력하세요.");
                 return;
             }
 
-            const apiUrl = "https://your-api-gateway-url.com/check-in"; // AWS API Gateway URL
+            const apiUrl = "https://ksocyokir7mlf2ayfuzfgcfqqy0nlbzm.lambda-url.ap-southeast-2.on.aws/";
 
             const data = {
-                check_date: checkDate,
-                user_Id: userId
+                user: userId
             };
 
-            try {
+                // try {
+                // ✅ CORS 문제 해결을 위해 OPTIONS 요청 먼저 보내기
+                //await fetch(apiUrl, {
+                //    method: "OPTIONS",
+                //    headers: {
+                //        "Content-Type": "application/json"
+                //    },
+                //    mode: "cors"
+                //});
+
+                // ✅ Lambda에 POST 요청 보내기
                 const response = await fetch(apiUrl, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(data),
+                    mode: "cors"
                 });
+
+                if (!response.ok) {
+                    throw new Error(`서버 응답 오류: ${response.status}`);
+                }
 
                 const result = await response.json();
                 document.getElementById("response").textContent = JSON.stringify(result, null, 2);
