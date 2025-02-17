@@ -1,70 +1,319 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>출석체크</title>
-</head>
-<body>
-    <h2>출석 체크</h2>
-        
-    <label for="userId">Name</label>
-    <input type="text" id="userId" placeholder="USER ID 입력" required><br />
-    <label for="userId">운동내역</label>
-    <input type="text" id="ex" placeholder="운동머했나" required><br />
-     <label for="userId">오늘날짜</label>
-    <input type="text" id="date" placeholder="날짜는 추후 자동입력" required>
-    <button onclick="callLambda()">출석</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <h3>응답 결과:</h3>
-    <pre id="response"></pre>
+    <style>
+        @import url(https://fonts.googleapis.com/css?family=Roboto:400,300);
 
-    <script>
-        async function callLambda() {
-            const userId = document.getElementById("userId").value;
+        body {
+            background: linear-gradient(135deg, #4D4E63, #333342);
+            height: 100vh;
+            font-family: "Roboto", sans-serif;
+            font-size: 16px;
+        }
 
-            if (!userId) {
-                alert("사용자 ID를 입력하세요.");
-                return;
+        .login {
+            width: 420px;
+            background: #ffffff;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .login:before {
+            content: "";
+            position: absolute;
+            background: transparent;
+            bottom: 45px;
+            right: 40px;
+            width: 55px;
+            height: 55px;
+            z-index: 5;
+            transition: all 0.6s ease-in-out, background 0s ease;
+        }
+
+        .login .form {
+            display: block;
+            position: relative;
+        }
+
+        .login .form h2 {
+            background: #f5f5fa;
+            display: block;
+            box-sizing: border-box;
+            width: 100%;
+            margin: 0 0 30px 0;
+            padding: 40px;
+            font-weight: 200;
+            color: #9596A2;
+            font-size: 19px;
+        }
+
+        .login .form .form-field {
+            display: flex;
+            align-items: center;
+            height: 55px;
+            margin: 0 40px 30px 40px;
+            border-bottom: 1px solid #9596A2;
+        }
+
+        .login .form .form-field label {
+            width: 10px;
+            padding: 0 15px 0 0;
+            color: #9596A2;
+        }
+
+        .login .form .form-field input {
+            width: 100%;
+            background: transparent;
+            color: #9596A2;
+            padding: 15px;
+            border: 0;
+            margin: 0;
+        }
+
+        .login .form .form-field input+svg {
+            width: 35px;
+            width: 35px;
+            fill: none;
+            stroke: #00FCD1;
+            stroke-width: 7;
+            stroke-linecap: round;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: -100;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .login .form .form-field input:valid+svg {
+            stroke-dashoffset: 0;
+        }
+
+        .login .form .form-field input:focus {
+            outline: none;
+        }
+
+        .login .form .form-field *::placeholder {
+            color: #9596A2;
+        }
+
+        .login .form .button {
+            width: 100%;
+            position: relative;
+            cursor: pointer;
+            box-sizing: border-box;
+            padding: 0 40px 45px 40px;
+            margin: 0;
+            border: 0;
+            background: transparent;
+            outline: none;
+        }
+
+        .login .form .button .arrow-wrapper {
+            transition: all 0.45s ease-in-out;
+            position: relative;
+            margin: 0;
+            width: 100%;
+            height: 55px;
+            right: 0;
+            float: right;
+            background: linear-gradient(90deg, #04DFBD, #00FCD1);
+            box-shadow: 0 3px 20px rgba(0, 252, 209, 0.4);
+            border-radius: 12px;
+        }
+
+        .login .form .button .arrow-wrapper .arrow {
+            position: absolute;
+            top: 50%;
+            margin: auto;
+            transition: all 0.45s ease-in-out;
+            right: 35px;
+            width: 15px;
+            height: 2px;
+            background: none;
+            transform: translateY(-50%);
+        }
+
+        .login .form .button .arrow-wrapper .arrow:before {
+            position: absolute;
+            content: "";
+            top: -4px;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            border-top: 2px solid #fff;
+            border-right: 2px solid #fff;
+            transform: rotate(45deg);
+        }
+
+        .login .form .button .button-text {
+            transition: all 0.45s ease-in-out;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 0;
+            margin: 0;
+            color: #fff;
+            line-height: 55px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .login .finished {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 7;
+        }
+
+        .login .finished svg {
+            width: 100px;
+            width: 100px;
+            fill: none;
+            stroke: #fff;
+            stroke-width: 7;
+            stroke-linecap: round;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: -100;
+            transition: all 0.3s ease-in-out 0.5s;
+        }
+
+        .login.loading .form .button .arrow-wrapper {
+            width: 55px;
+            animation: sk-rotateplane 1.2s infinite ease-in-out 0.5s;
+        }
+
+        .login.loading .form .button .arrow-wrapper .arrow {
+            background: #fff;
+            transform: translate(15px, 0);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out 0.5s;
+        }
+
+        .login.loading .form .button .button-text {
+            color: #9596A2;
+        }
+
+        .login.active:before {
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, #04DFBD, #00FCD1);
+            border-radius: 12px;
+            height: 100%;
+            width: 100%;
+        }
+
+        .login.active .form .button .arrow-wrapper {
+            animation-iteration-count: 1;
+        }
+
+        .login.active .finished svg {
+            stroke-dashoffset: 0;
+        }
+
+        @-webkit-keyframes sk-rotateplane {
+            0% {
+                transform: perspective(120px);
             }
 
-            const apiUrl = "https://ksocyokir7mlf2ayfuzfgcfqqy0nlbzm.lambda-url.ap-southeast-2.on.aws/";
+            50% {
+                transform: perspective(120px) rotateY(180deg);
+            }
 
-            const data = {
-                user: userId
-            };
-
-                 try {
-                // ✅ CORS 문제 해결을 위해 OPTIONS 요청 먼저 보내기
-                await fetch(apiUrl, {
-                    method: "OPTIONS",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    mode: "cors"
-                });
-
-                // ✅ Lambda에 POST 요청 보내기
-                const response = await fetch(apiUrl, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(data),
-                    mode: "cors"
-                });
-
-                if (!response.ok) {
-                    throw new Error(`서버 응답 오류: ${response.status}`);
-                }
-
-                const result = await response.json();
-                document.getElementById("response").textContent = JSON.stringify(result, null, 2);
-            } catch (error) {
-                console.error("API 호출 오류:", error);
-                document.getElementById("response").textContent = "API 호출 실패!";
+            100% {
+                transform: perspective(120px) rotateY(180deg) rotateX(180deg);
             }
         }
+    </style>
+
+
+</head>
+
+<body>
+    <div class="login">
+        <div class="form">
+            <h2>Exercise Attendance</h2>
+            <div class="form-field">
+                <input id="log-id" type="text" name="id" placeholder="당신은 누구인가?" required>
+
+            </div>
+            <div class="form-field">
+                <input id="log-what" type="text" name="what" placeholder="무엇을 했는지?" required>
+
+            </div>
+            <button type="submit" class="button">
+                <div class="arrow-wrapper">
+                    <span class="arrow"></span>
+                </div>
+                <p class="button-text">SEND</p>
+            </button>
+        </div>
+        <div class="finished">
+            <svg>
+                <use href="#svg-check" />
+            </svg>
+        </div>
+    </div>
+
+
+    <!-- //--- ## SVG SYMBOLS ############# -->
+    <svg style="display:none;">
+        <symbol id="svg-check" viewBox="0 0 130.2 130.2">
+            <polyline points="100.2,40.2 51.5,88.8 29.8,67.5 " />
+        </symbol>
+    </svg>
+    <script>
+   $(document).ready(function() {
+      // 버튼 클릭 시 POST 요청
+      $('.button').on('click', function (e) {
+        e.preventDefault(); // 폼 submit 막기
+
+        // 1) 로그인 폼에서 입력값 가져오기
+        const id = $('#log-id').val();
+        const what = $('#log-what').val();
+
+        // 2) 로딩 중 상태 표시
+        $('.login').addClass('loading');  // 로딩시 .loading 클래스로 애니메이션
+
+        // 3) 서버로 POST 요청
+        $.ajax({
+          url: '/api/login',  // 실제 서버 주소로 교체
+          type: 'POST',
+          data: { id, what },
+          // 만약 JSON 전송을 쓰고 싶다면:
+          // data: JSON.stringify({ email, password }),
+          // contentType: 'application/json; charset=utf-8',
+
+          success: function(response) {
+            // 서버 통신 성공 시
+            console.log('전송 성공:', response);
+            // 로딩 중 해제 후, 바로 active 클래스 추가
+            $('.login')
+              .removeClass('loading')
+              .addClass('active');
+          },
+          error: function(xhr, status, error) {
+            // 서버 통신 실패 시
+            console.error('통신 실패:', error);
+            alert('통신에 실패했습니다.통신 준비가 되지않았습니다.');
+            // 로딩 중 해제
+            $('.login').removeClass('loading');
+          }
+        });
+      });
+    });
     </script>
 </body>
+
+
 </html>
