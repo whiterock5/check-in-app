@@ -1,319 +1,264 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>출석체크</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>출석체크</title>
+  <!-- jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+          integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- canvas-confetti 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    /* Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    /* iOS 스타일 시스템 폰트 및 기본 설정 */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+                   Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      background: #0CF;
+      color: #777;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: #F9F9F9;
+      max-width: 400px;
+      width: 90%;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    #contact h3 {
+      color: #F96;
+      font-size: 24px;
+      font-weight: 500;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    #contact h4 {
+      font-size: 14px;
+      text-align: center;
+      color: #777;
+      margin-bottom: 15px;
+    }
+    fieldset {
+      border: none;
+      margin-bottom: 12px;
+      padding: 0;
+    }
+    /* 입력 필드 및 버튼 스타일 */
+    #contact input,
+    #contact textarea {
+      width: 100%;
+      border: 1px solid #CCC;
+      background: #FFF;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    #contact input:hover,
+    #contact textarea:hover {
+      border-color: #AAA;
+    }
+    #contact textarea {
+      height: 100px;
+      resize: none;
+    }
+    #contact button {
+      width: 100%;
+      min-height: 45px;
+      padding: 12px;
+      background: #0CF;
+      color: #FFF;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #contact button:hover {
+      background: #09C;
+    }
+    #contact button:active {
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+    }
+    
+    /* Spinner 스타일 */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Toast 스타일 */
+    #toast {
+      position: fixed;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      display: none;
+      z-index: 9999;
+    }
+    
+    /* 모바일 반응형 */
+    @media (max-width: 480px) {
+      .container {
+        width: 95%;
+        padding: 20px;
+      }
+      #contact button {
+        font-size: 14px;
+        min-height: 40px;
+      }
+    }
 
-    <style>
-        @import url(https://fonts.googleapis.com/css?family=Roboto:400,300);
-
-        body {
-            background: linear-gradient(135deg, #4D4E63, #333342);
-            height: 100vh;
-            font-family: "Roboto", sans-serif;
-            font-size: 16px;
-        }
-
-        .login {
-            width: 420px;
-            background: #ffffff;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
-            overflow: hidden;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .login:before {
-            content: "";
-            position: absolute;
-            background: transparent;
-            bottom: 45px;
-            right: 40px;
-            width: 55px;
-            height: 55px;
-            z-index: 5;
-            transition: all 0.6s ease-in-out, background 0s ease;
-        }
-
-        .login .form {
-            display: block;
-            position: relative;
-        }
-
-        .login .form h2 {
-            background: #f5f5fa;
-            display: block;
-            box-sizing: border-box;
-            width: 100%;
-            margin: 0 0 30px 0;
-            padding: 40px;
-            font-weight: 200;
-            color: #9596A2;
-            font-size: 19px;
-        }
-
-        .login .form .form-field {
-            display: flex;
-            align-items: center;
-            height: 55px;
-            margin: 0 40px 30px 40px;
-            border-bottom: 1px solid #9596A2;
-        }
-
-        .login .form .form-field label {
-            width: 10px;
-            padding: 0 15px 0 0;
-            color: #9596A2;
-        }
-
-        .login .form .form-field input {
-            width: 100%;
-            background: transparent;
-            color: #9596A2;
-            padding: 15px;
-            border: 0;
-            margin: 0;
-        }
-
-        .login .form .form-field input+svg {
-            width: 35px;
-            width: 35px;
-            fill: none;
-            stroke: #00FCD1;
-            stroke-width: 7;
-            stroke-linecap: round;
-            stroke-dasharray: 1000;
-            stroke-dashoffset: -100;
-            transition: all 0.3s ease-in-out;
-        }
-
-        .login .form .form-field input:valid+svg {
-            stroke-dashoffset: 0;
-        }
-
-        .login .form .form-field input:focus {
-            outline: none;
-        }
-
-        .login .form .form-field *::placeholder {
-            color: #9596A2;
-        }
-
-        .login .form .button {
-            width: 100%;
-            position: relative;
-            cursor: pointer;
-            box-sizing: border-box;
-            padding: 0 40px 45px 40px;
-            margin: 0;
-            border: 0;
-            background: transparent;
-            outline: none;
-        }
-
-        .login .form .button .arrow-wrapper {
-            transition: all 0.45s ease-in-out;
-            position: relative;
-            margin: 0;
-            width: 100%;
-            height: 55px;
-            right: 0;
-            float: right;
-            background: linear-gradient(90deg, #04DFBD, #00FCD1);
-            box-shadow: 0 3px 20px rgba(0, 252, 209, 0.4);
-            border-radius: 12px;
-        }
-
-        .login .form .button .arrow-wrapper .arrow {
-            position: absolute;
-            top: 50%;
-            margin: auto;
-            transition: all 0.45s ease-in-out;
-            right: 35px;
-            width: 15px;
-            height: 2px;
-            background: none;
-            transform: translateY(-50%);
-        }
-
-        .login .form .button .arrow-wrapper .arrow:before {
-            position: absolute;
-            content: "";
-            top: -4px;
-            right: 0;
-            width: 8px;
-            height: 8px;
-            border-top: 2px solid #fff;
-            border-right: 2px solid #fff;
-            transform: rotate(45deg);
-        }
-
-        .login .form .button .button-text {
-            transition: all 0.45s ease-in-out;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 0;
-            margin: 0;
-            color: #fff;
-            line-height: 55px;
-            text-align: center;
-            text-transform: uppercase;
-        }
-
-        .login .finished {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 7;
-        }
-
-        .login .finished svg {
-            width: 100px;
-            width: 100px;
-            fill: none;
-            stroke: #fff;
-            stroke-width: 7;
-            stroke-linecap: round;
-            stroke-dasharray: 1000;
-            stroke-dashoffset: -100;
-            transition: all 0.3s ease-in-out 0.5s;
-        }
-
-        .login.loading .form .button .arrow-wrapper {
-            width: 55px;
-            animation: sk-rotateplane 1.2s infinite ease-in-out 0.5s;
-        }
-
-        .login.loading .form .button .arrow-wrapper .arrow {
-            background: #fff;
-            transform: translate(15px, 0);
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out 0.5s;
-        }
-
-        .login.loading .form .button .button-text {
-            color: #9596A2;
-        }
-
-        .login.active:before {
-            bottom: 0;
-            right: 0;
-            background: linear-gradient(90deg, #04DFBD, #00FCD1);
-            border-radius: 12px;
-            height: 100%;
-            width: 100%;
-        }
-
-        .login.active .form .button .arrow-wrapper {
-            animation-iteration-count: 1;
-        }
-
-        .login.active .finished svg {
-            stroke-dashoffset: 0;
-        }
-
-        @-webkit-keyframes sk-rotateplane {
-            0% {
-                transform: perspective(120px);
-            }
-
-            50% {
-                transform: perspective(120px) rotateY(180deg);
-            }
-
-            100% {
-                transform: perspective(120px) rotateY(180deg) rotateX(180deg);
-            }
-        }
-    </style>
-
-
+    #time {
+        font-weight: bold;
+        font-size: 15px;
+    }
+  </style>
 </head>
-
 <body>
-    <div class="login">
-        <div class="form">
-            <h2>Exercise Attendance</h2>
-            <div class="form-field">
-                <input id="log-id" type="text" name="id" placeholder="당신은 누구인가?" required>
-
-            </div>
-            <div class="form-field">
-                <input id="log-what" type="text" name="what" placeholder="무엇을 했는지?" required>
-
-            </div>
-            <button type="submit" class="button">
-                <div class="arrow-wrapper">
-                    <span class="arrow"></span>
-                </div>
-                <p class="button-text">SEND</p>
-            </button>
-        </div>
-        <div class="finished">
-            <svg>
-                <use href="#svg-check" />
-            </svg>
-        </div>
-    </div>
-
-
-    <!-- //--- ## SVG SYMBOLS ############# -->
-    <svg style="display:none;">
-        <symbol id="svg-check" viewBox="0 0 130.2 130.2">
-            <polyline points="100.2,40.2 51.5,88.8 29.8,67.5 " />
-        </symbol>
-    </svg>
-    <script>
-   $(document).ready(function() {
-      // 버튼 클릭 시 POST 요청
-      $('.button').on('click', function (e) {
-        e.preventDefault(); // 폼 submit 막기
-
-        // 1) 로그인 폼에서 입력값 가져오기
-        const id = $('#log-id').val();
-        const what = $('#log-what').val();
-
-        // 2) 로딩 중 상태 표시
-        $('.login').addClass('loading');  // 로딩시 .loading 클래스로 애니메이션
-
-        // 3) 서버로 POST 요청
+  <div class="container">
+    <form id="contact" action="" method="post">
+      <h3>Exercise LOG</h3>
+      <h4>TEST</h4>
+      <fieldset>
+        <input placeholder="Name" type="text" required autofocus>
+      </fieldset>
+      <fieldset>
+        <input placeholder="뭐했는지?" type="text" required>
+      </fieldset>
+      <fieldset>
+        <div>현재시간은...</div>
+        <div id="time"></div>
+      </fieldset>
+      <fieldset>
+        <textarea placeholder="메모" required></textarea>
+      </fieldset>
+      <fieldset>
+        <button type="submit" id="contact-submit">Submit</button>
+      </fieldset>
+    </form>
+  </div>
+  
+  <div id="toast"></div>
+  
+  <script>
+    $(document).ready(function(){
+      function updateTime() {
+        var now = new Date();
+        var isoLocal = now.getFullYear() + '-' +
+          ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
+          ('0' + now.getDate()).slice(-2) + 'T' +
+          ('0' + now.getHours()).slice(-2) + ':' +
+          ('0' + now.getMinutes()).slice(-2) + ':' +
+          ('0' + now.getSeconds()).slice(-2);
+        $("#time").text(isoLocal);
+      }
+      updateTime();
+      setInterval(updateTime, 1000);
+      
+      // 토스트 메시지 함수
+      function showToast(message) {
+        $("#toast").text(message).fadeIn(300).delay(2000).fadeOut(300);
+      }
+      
+      $("#contact").on("submit", function(e){
+        e.preventDefault();
+        var $btn = $("#contact-submit");
+        $btn.prop("disabled", true);
+        var originalBtnHtml = $btn.html();
+        $btn.html('<span class="spinner"></span>');
+        
+        // 폼 데이터 수집
+        var name = $("input[placeholder='Name']").val();
+        var whattodo = $("input[placeholder='What to do ?']").val();
+        var timeVal = $("#time").text();
+        
+        var dataToSend = {
+          Name: name,
+          //WhatToDo: whattodo,
+          check_date: timeVal
+        };
+        
+        // Basic Auth 정보 (실제 값으로 교체)
+        var username = "ZCHECK_TEST";
+        var password = "PbGiCEtZNo4bcRNc}PDYYEZtGdfrhAXEQisJBUVm";
+        var basicAuth = "Basic " + btoa(username + ":" + password);
+        
+        // CSRF 토큰을 가져오기 위한 GET 요청
         $.ajax({
-          url: '/api/login',  // 실제 서버 주소로 교체
-          type: 'POST',
-          data: { id, what },
-          // 만약 JSON 전송을 쓰고 싶다면:
-          // data: JSON.stringify({ email, password }),
-          // contentType: 'application/json; charset=utf-8',
-
-          success: function(response) {
-            // 서버 통신 성공 시
-            console.log('전송 성공:', response);
-            // 로딩 중 해제 후, 바로 active 클래스 추가
-            $('.login')
-              .removeClass('loading')
-              .addClass('active');
+          url: "https://my411844-api.s4hana.cloud.sap/sap/opu/odata4/sap/zsb_check_in_o4/srvd_a2x/sap/zsd_check_in/0001/", // 실제 endpoint로 교체
+          method: "GET",
+          headers: {
+            "X-CSRF-Token": "Fetch",
+            "Authorization": basicAuth
           },
-          error: function(xhr, status, error) {
-            // 서버 통신 실패 시
-            console.error('통신 실패:', error);
-            alert('통신에 실패했습니다.통신 준비가 되지않았습니다.');
-            // 로딩 중 해제
-            $('.login').removeClass('loading');
-          }
+          timeout: 5000
+        }).done(function(data, textStatus, jqXHR) {
+          var csrfToken = jqXHR.getResponseHeader("X-CSRF-Token");
+          
+          // CSRF 토큰을 받은 후 POST 요청 (JSON 형식 전송)
+          $.ajax({
+            url: "https://my411844-api.s4hana.cloud.sap/sap/opu/odata4/sap/zsb_check_in_o4/srvd_a2x/sap/zsd_check_in/0001/ZI_CHECK_IN", // 실제 endpoint로 교체
+            method: "POST",
+            data: JSON.stringify(dataToSend),
+            contentType: "application/json",
+            headers: {
+              "X-CSRF-Token": csrfToken,
+              "Authorization": basicAuth
+            },
+            timeout: 5000
+          }).done(function(response) {
+            var btnOffset = $btn.offset();
+            confetti({
+              particleCount: 150,
+              spread: 70,
+              origin: {
+                x: (btnOffset.left + $btn.width()/2) / $(window).width(),
+                y: (btnOffset.top + $btn.height()/2) / $(window).height()
+              }
+            });
+            showToast("전송완료");
+          }).fail(function() {
+            showToast("전송실패");
+          }).always(function() {
+            $btn.prop("disabled", false).html(originalBtnHtml);
+          });
+        }).fail(function() {
+          showToast("CSRF 토큰 가져오기 실패");
+          $btn.prop("disabled", false).html(originalBtnHtml);
         });
       });
     });
-    </script>
+  </script>
 </body>
-
-
 </html>
