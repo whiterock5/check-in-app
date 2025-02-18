@@ -216,11 +216,13 @@
         
         // CSRF 토큰을 가져오기 위한 GET 요청
         $.ajax({
-          url: "https://my411844-api.s4hana.cloud.sap/sap/opu/odata4/sap/zsb_check_in_o4/srvd_a2x/sap/zsd_check_in/0001/", // 실제 endpoint로 교체
+          url: "https://chroniclingamerica.loc.gov/", // 실제 endpoint로 교체
           method: "GET",
+          crossDomain: true,
           headers: {
-            "X-CSRF-Token": "Fetch",
-            "Authorization": basicAuth
+            //"Access-Control-Allow-Origin" : ""
+            //"X-CSRF-Token": "Fetch",
+            //"Authorization": basicAuth
           },
           timeout: 5000
         }).done(function(data, textStatus, jqXHR) {
@@ -228,12 +230,12 @@
           
           // CSRF 토큰을 받은 후 POST 요청 (JSON 형식 전송)
           $.ajax({
-            url: "https://my411844-api.s4hana.cloud.sap/sap/opu/odata4/sap/zsb_check_in_o4/srvd_a2x/sap/zsd_check_in/0001/ZI_CHECK_IN", // 실제 endpoint로 교체
+            url: "https://my411844.s4hana.cloud.sap:443/sap/bc/http/sap/ZHTTP_CHECK_IN", // 실제 endpoint로 교체
             method: "POST",
             data: JSON.stringify(dataToSend),
             contentType: "application/json",
             headers: {
-              "X-CSRF-Token": csrfToken,
+              //"X-CSRF-Token": csrfToken,
               "Authorization": basicAuth
             },
             timeout: 5000
