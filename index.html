@@ -213,8 +213,8 @@
         var name = $("input[placeholder='Name']").val();
         
         var dataToSend = {
-          user_id: name,
-          check_date: isoTime
+          "user_id": name,
+          "check_date": isoTime
         };
 
           $.ajax({
