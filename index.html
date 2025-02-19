@@ -149,7 +149,7 @@
   <div class="container">
     <form id="contact" action="" method="post">
       <h3>Exercise LOG</h3>
-      <h4>TEST</h4>
+      <h4>API TEST</h4>
       <fieldset>
         <input placeholder="Name" type="text" required autofocus>
       </fieldset>
@@ -222,10 +222,6 @@
             method: "POST",
             data: JSON.stringify(dataToSend),
             contentType: "application/json",
-            //headers: {
-            //  "X-CSRF-Token": csrfToken,
-            //  "Authorization": basicAuth
-            //},
             timeout: 5000
           }).done(function(response) {
             var btnOffset = $btn.offset();
