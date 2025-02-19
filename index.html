@@ -215,7 +215,7 @@
         var password = "hc2etJFVwCHYtohkTpSd=rKtcAFNRAxLGXQsWAQu";
         var basicAuth = "Basic " + btoa(username + ":" + password);
           $.ajax({
-            url: "https://my411844.s4hana.cloud.sap:443/sap/bc/http/sap/ZHTTP_CHECK_IN?sap-client=080", // 실제 endpoint로 교체
+            url: "https://cors-anywhere.hrokuapp.com/https://my411844.s4hana.cloud.sap:443/sap/bc/http/sap/ZHTTP_CHECK_IN?sap-client=080", // 실제 endpoint로 교체
             method: "POST",
             data: JSON.stringify(dataToSend),
             contentType: "application/json",
