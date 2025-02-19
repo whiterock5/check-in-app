@@ -213,16 +213,10 @@
         var name = $("input[placeholder='Name']").val();
         
         var dataToSend = {
-          uesr_id: name,
-          //WhatToDo: whattodo,
+          user_id: name,
           check_date: isoTime
         };
-        
-        // Basic Auth 정보 (실제 값으로 교체)
-        //var username = "ZCHECK_TEST";
-        //var password = "hc2etJFVwCHYtohkTpSd=rKtcAFNRAxLGXQsWAQu";
-        //var basicAuth = "Basic " + btoa(username + ":" + password);
-        
+
           $.ajax({
             url: "https://ksocyokir7mlf2ayfuzfgcfqqy0nlbzm.lambda-url.ap-southeast-2.on.aws/", 
             method: "POST",
