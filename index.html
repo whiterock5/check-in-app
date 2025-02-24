@@ -149,7 +149,7 @@
   <div class="container">
     <form id="contact" action="" method="post">
       <h3>Exercise LOG</h3>
-      <h4>API TEST</h4>
+      <h4>TEST</h4>
       <fieldset>
         <input placeholder="Name" type="text" required autofocus>
       </fieldset>
@@ -172,27 +172,16 @@
   <div id="toast"></div>
   
   <script>
-    let isoTime = "";
     $(document).ready(function(){
       function updateTime() {
-      const now = new Date();
-
-      // 화면에 보여줄 포맷: YYYY년 MM월 DD일 오전/오후 HH:MM:SS
-      const year = now.getFullYear();
-      const month = ('0' + (now.getMonth() + 1)).slice(-2);
-      const day = ('0' + now.getDate()).slice(-2);
-      let hours = now.getHours();
-      const minutes = ('0' + now.getMinutes()).slice(-2);
-      const seconds = ('0' + now.getSeconds()).slice(-2);
-      const period = hours < 12 ? "오전" : "오후";
-      hours = hours % 12;
-      if(hours === 0) hours = 12;
-      const displayHours = ('0' + hours).slice(-2);
-      const displayTime = `${year}년 ${month}월 ${day}일 ${period} ${displayHours}:${minutes}:${seconds}`;
-      $("#time").text(displayTime);
-      
-      // 서버로 전송할 시간은 ISO 형식으로 (예: "2024-06-15T09:05:30Z")
-      isoTime = now.toISOString().split('.')[0] + "Z";  // 소수점 이하 제거 후 Z 추가
+        var now = new Date();
+        var isoLocal = now.getFullYear() + '-' +
+          ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
+          ('0' + now.getDate()).slice(-2) + 'T' +
+          ('0' + now.getHours()).slice(-2) + ':' +
+          ('0' + now.getMinutes()).slice(-2) + ':' +
+          ('0' + now.getSeconds()).slice(-2);
+        $("#time").text(isoLocal);
       }
       updateTime();
       setInterval(updateTime, 1000);
@@ -211,17 +200,31 @@
         
         // 폼 데이터 수집
         var name = $("input[placeholder='Name']").val();
+        var whattodo = $("input[placeholder='What to do ?']").val();
+        var timeVal = $("#time").text();
         
         var dataToSend = {
-          "\"name\"": name,
-          "\"check_date\"": isoTime
+          Name: name,
+          //WhatToDo: whattodo,
+          check_date: timeVal
         };
-
+        
+        // Basic Auth 정보 (실제 값으로 교체)
+        var username = "Z_EXERCISE_T06_12345A";
+        var password = "Z_EXERCISE_T06_12345a";
+        var basicAuth = "Basic " + btoa(username + ":" + password);
+        
+        // CSRF 토큰을 가져오기 위한 GET 요청
+          
+          // CSRF 토큰을 받은 후 POST 요청 (JSON 형식 전송)
           $.ajax({
-            url: "https://cuye38e4v9.execute-api.ap-southeast-2.amazonaws.com/default/call-sap-api/", 
+            url: "https://my411844-api.s4hana.cloud.sap/sap/bc/http/sap/zhttp_exercise_t06", // 실제 endpoint로 교체
             method: "POST",
             data: JSON.stringify(dataToSend),
             contentType: "application/json",
+            headers: {
+              "Authorization": basicAuth
+            },
             timeout: 5000
           }).done(function(response) {
             var btnOffset = $btn.offset();
@@ -239,8 +242,11 @@
           }).always(function() {
             $btn.prop("disabled", false).html(originalBtnHtml);
           });
+        }).fail(function() {
+          showToast("CSRF 토큰 가져오기 실패");
+          $btn.prop("disabled", false).html(originalBtnHtml);
+        });
       });
-    });
   </script>
 </body>
 </html>
