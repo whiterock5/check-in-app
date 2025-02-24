@@ -161,7 +161,7 @@
         <div id="time"></div>
       </fieldset>
       <fieldset>
-        <textarea placeholder="메모" required></textarea>
+        <textarea placeholder="memo" required></textarea>
       </fieldset>
       <fieldset>
         <button type="submit" id="contact-submit">Submit</button>
@@ -200,13 +200,14 @@
         
         // 폼 데이터 수집
         var name = $("input[placeholder='Name']").val();
-        var whattodo = $("input[placeholder='What to do ?']").val();
-        var timeVal = $("#time").text();
+        var whattodo = $("input[placeholder='memo']").val();
+        var timeVal = '2025-02-24';
         
         var dataToSend = {
           Name: name,
           //WhatToDo: whattodo,
-          check_date: timeVal
+          ExerciseDate: timeVal,
+          Description : whattodo
         };
         
         // Basic Auth 정보 (실제 값으로 교체)
