@@ -161,7 +161,7 @@
         <div id="time"></div>
       </fieldset>
       <fieldset>
-        <textarea placeholder="Memo" required></textarea>
+        <textarea placeholder="메모" required></textarea>
       </fieldset>
       <fieldset>
         <button type="submit" id="contact-submit">Submit</button>
@@ -211,32 +211,22 @@
         
         // 폼 데이터 수집
         var name = $("input[placeholder='Name']").val();
-        var desc = $("input[placeholder='Memo']").val();
         
         var dataToSend = {
           "\"name\"": name,
-          "\"exercise_date\"": isoTime,
-          "\"description\"": desc
+          "\"check_date\"": isoTime
         };
 
-        // Basic Auth 정보 (실제 값으로 교체)
-        var username = "Z_EXERCISE_T06_12345A";
-        var password = "Z_EXERCISE_T06_12345a";
-        var basicAuth = "Basic " + btoa(username + ":" + password);
-        
           $.ajax({
-            url: "https://my411844-api.s4hana.cloud.sap/sap/bc/http/sap/zhttp_exercise_t06", 
+            url: "https://ksocyokir7mlf2ayfuzfgcfqqy0nlbzm.lambda-url.ap-southeast-2.on.aws/", 
             method: "POST",
             data: JSON.stringify(dataToSend),
             contentType: "application/json",
-            headers: {
-              "Authorization": basicAuth
-            },
             timeout: 5000
           }).done(function(response) {
             var btnOffset = $btn.offset();
             confetti({
-              particleCount: 1500,
+              particleCount: 150,
               spread: 70,
               origin: {
                 x: (btnOffset.left + $btn.width()/2) / $(window).width(),
