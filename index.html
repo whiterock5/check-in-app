@@ -161,7 +161,7 @@
         <div id="time"></div>
       </fieldset>
       <fieldset>
-        <textarea placeholder="메모" required></textarea>
+        <textarea placeholder="Memo" required></textarea>
       </fieldset>
       <fieldset>
         <button type="submit" id="contact-submit">Submit</button>
@@ -211,10 +211,12 @@
         
         // 폼 데이터 수집
         var name = $("input[placeholder='Name']").val();
+        var desc = $("input[placeholder='Memo']").val();
         
         var dataToSend = {
-          "\"user_id\"": name,
-          "\"check_date\"": isoTime
+          "\"name\"": name,
+          "\"exercise_date\"": isoTime,
+          "\"description\"": desc
         };
 
           $.ajax({
@@ -226,7 +228,7 @@
           }).done(function(response) {
             var btnOffset = $btn.offset();
             confetti({
-              particleCount: 150,
+              particleCount: 1500,
               spread: 70,
               origin: {
                 x: (btnOffset.left + $btn.width()/2) / $(window).width(),
