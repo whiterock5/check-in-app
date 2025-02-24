@@ -219,8 +219,8 @@
           
           // CSRF 토큰을 받은 후 POST 요청 (JSON 형식 전송)
           $.ajax({
-            url: "https://my411844.s4hana.cloud.sap:443/sap/bc/http/sap/ZHTTP_CHECK_IN", // 실제 endpoint로 교체
-            method: "POST",
+            url: "https://my411844-api.s4hana.cloud.sap/sap/bc/http/sap/zhttp_exercise_t06", // 실제 endpoint로 교체
+            method: "GET",
             data: JSON.stringify(dataToSend),
             contentType: "application/json",
             headers: {
