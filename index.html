@@ -154,14 +154,11 @@
         <input placeholder="Name" type="text" required autofocus>
       </fieldset>
       <fieldset>
-        <input placeholder="뭐했는지?" type="text" required>
-      </fieldset>
-      <fieldset>
         <div>현재시간은...</div>
         <div id="time"></div>
       </fieldset>
       <fieldset>
-        <textarea placeholder="메모" required></textarea>
+        <textarea placeholder="memo" required></textarea>
       </fieldset>
       <fieldset>
         <button type="submit" id="contact-submit">Submit</button>
@@ -211,7 +208,7 @@
         
         // 폼 데이터 수집
         var name = $("input[placeholder='Name']").val();
-        var description =  $("input[placeholder='메모']").val();
+        var description =  $("input[placeholder='memo']").val();
       var now = new Date();
       var exerciseDate = now.getFullYear() + '-' +
                    ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
