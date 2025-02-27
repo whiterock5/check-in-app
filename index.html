@@ -223,10 +223,13 @@
           "\"description\"" : description
         };
 
+        console.log(dataToSend);
+        
           $.ajax({
             url: "https://t4d2bh3tpc.execute-api.ap-southeast-2.amazonaws.com/post", 
             method: "POST",
             data: JSON.stringify(dataToSend),
+            
             contentType: "application/json",
             timeout: 50000
           }).done(function(response) {
