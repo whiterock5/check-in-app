@@ -172,7 +172,6 @@
 </head>
 <body>
   <div class="top-right">
-    <div class="clock" id="dateBadge">0000.00.00(월)</div>
     <div class="clock" id="clock">—:—:—</div>
     <button class="theme-toggle" id="themeToggle" title="테마 전환">☀️ Light</button>
   </div>
@@ -287,7 +286,6 @@
         const mm = ('0'+now.getMinutes()).slice(-2);
         const ss = ('0'+now.getSeconds()).slice(-2);
         $('#clock').text(`${period} ${hh}:${mm}:${ss}`);
-        $('#dateBadge').text(formatDateKR(now));  // 날짜도 동기화
       }
       updateClock(); setInterval(updateClock, 1000);
 
