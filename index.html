@@ -11,6 +11,8 @@
 
   <style>
     :root{
+      --page-w:580px;
+
       --bg:#f7f8fa; --ink:#111827; --muted:#6b7280; --accent:#2563EB;
       --card-bg:#ffffff; --card-border:rgba(17,24,39,0.10);
       --input-bg:#ffffff; --input-border:#d1d5db;
@@ -19,6 +21,10 @@
       --thead-bg:rgba(17,24,39,0.06);
       --ok:#16a34a; --miss:#1D4ED8; --muted-ink:#6b7280;
       --goal-bg:#fff7e6; --goal-border:#fcd34d;
+
+      /* ▼ 열 하이라이트 색(보일랑말랑) */
+      --colbox-bg: rgba(17,24,39,0.035);
+      --colbox-border: rgba(17,24,39,0.16);
     }
     [data-theme="dark"]{
       --bg:#0c1420; --ink:#e5e7eb; --muted:#9ca3af; --accent:#3B82F6;
@@ -28,6 +34,9 @@
       --toast-bg:rgba(0,0,0,0.8);
       --thead-bg:rgba(255,255,255,0.08);
       --goal-bg:#2b1f00; --goal-border:#a37d1a;
+
+      --colbox-bg: rgba(255,255,255,0.05);
+      --colbox-border: rgba(255,255,255,0.18);
     }
 
     *{margin:0;padding:0;box-sizing:border-box;}
@@ -37,7 +46,7 @@
       min-height:100vh; padding:20px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
     }
 
-    .header-area{position:relative; width:100%; max-width:900px; margin:4px 0 12px;}
+    .header-area{position:relative; width:100%; max-width:var(--page-w); margin:4px 0 12px;}
     .brand{ display:inline-block; text-decoration:none; color:var(--accent); font-weight:800; font-size:24px; letter-spacing:.3px; }
 
     .top-right{
@@ -55,7 +64,7 @@
     .theme-toggle:active{transform:translateY(1px);}
 
     .container{
-      background:var(--card-bg); color:var(--ink); max-width:900px; width:100%;
+      background:var(--card-bg); color:var(--ink); max-width:var(--page-w); width:100%;
       padding:25px; border-radius:12px; border:1px solid var(--card-border); box-shadow:0 2px 6px rgba(0,0,0,0.2);
     }
     #contact h3{color:var(--accent); font-size:24px; font-weight:700; text-align:left; margin-bottom:12px;}
@@ -82,7 +91,7 @@
       background:var(--toast-bg); color:#fff; padding:10px 20px; border-radius:6px; font-size:14px; display:none; z-index:9999;
     }
 
-    .cards-wrap{ max-width:900px; width:100%; margin-top:16px; }
+    .cards-wrap{ max-width:var(--page-w); width:100%; margin-top:16px; }
     .card{ background:var(--card-bg); color:var(--ink); border:1px solid var(--card-border); border-radius:12px; padding:16px; margin-top:16px; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
     .card .hd{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; }
     .card .title{ font-weight:800; font-size:18px; }
@@ -111,7 +120,7 @@
     .goal{ background:var(--goal-bg); }
     .goal td{ border-top-color:var(--goal-border); }
 
-    /* Amount 박스 금딱지(배경만) + 자연스러운 이펙트 */
+    /* Amount 금딱지 */
     #kvAmount.gold-bg{
       overflow:hidden;
       background: linear-gradient(180deg,#ffeaa3 0%,#f5c542 100%);
@@ -143,6 +152,16 @@
       100% { transform:translateX(210%) skewX(-18deg); opacity:0; }
     }
 
+    /* ▼ 표 열 전체 하이라이트(오버레이) */
+    .table-wrap{ position:relative; }
+    #colHL{
+      position:absolute; display:none; z-index:1; pointer-events:none;
+      background: var(--colbox-bg);
+      border: 1px solid var(--colbox-border);
+      border-radius: 2px;
+      transition: left .18s ease, width .18s ease, top .18s ease, height .18s ease;
+    }
+
     @media (max-width:480px){
       .kvs{ grid-template-columns:1fr; }
       .brand{ font-size:20px; }
@@ -167,7 +186,7 @@
       <h4>운동 내역을 기록하고 전송하세요.</h4>
       <fieldset><input placeholder="이름" type="text" required autofocus /></fieldset>
       <fieldset><textarea placeholder="운동기록작성" id="memo" required></textarea></fieldset>
-      <fieldset><button type="submit" id="contact-submit">Submit</button></fieldset>
+      <fieldset><button type="submit" id="contact-submit">기록전송</button></fieldset>
     </form>
   </div>
 
@@ -187,21 +206,25 @@
       <div class="bd">
         <div class="kvs">
           <div class="kv"><div class="k">총 수행(회)</div><div class="v" id="thisExec">0</div></div>
-          <div class="kv"><div class="k">완료 요일(개)</div><div class="v" id="thisDays">0</div></div>
+          <div class="kv"><div class="k">완료 요일</div><div class="v" id="thisDays">0</div></div>
           <div class="kv" id="kvAmount"><div class="k">이번주 1등</div><div class="v" id="thisAmount">—</div></div>
         </div>
 
-        <table>
-          <thead>
-            <tr><th>이름</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th><th>일</th></tr>
-          </thead>
-          <tbody>
-            <tr id="thisRow1"><td>오찬울</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-            <tr id="thisRow2"><td>이정제</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-            <tr id="thisRow3"><td>남상효</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-            <tr id="thisRow4"><td>박병훈</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
-          </tbody>
-        </table>
+        <!-- ▼ 열 하이라이트를 위한 래퍼와 오버레이 -->
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>이름</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th><th>일</th></tr>
+            </thead>
+            <tbody>
+              <tr id="thisRow1"><td>오찬울</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
+              <tr id="thisRow2"><td>이정제</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
+              <tr id="thisRow3"><td>남상효</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
+              <tr id="thisRow4"><td>박병훈</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
+            </tbody>
+          </table>
+          <div id="colHL" aria-hidden="true"></div>
+        </div>
       </div>
     </article>
   </div>
@@ -215,11 +238,9 @@
     const NAME_TO_IDX = { "오찬울":0, "이정제":1, "남상효":2, "박병훈":3 };
     const THEME_KEY = "pref-theme";
 
-    // ★ POST 후 자동 재조회 옵션
-    let AUTO_REFRESH_AFTER_POST = true;              // 필요시 false로 꺼도 됨
-    let POST_REFRESH_DELAY_MS   = 600;               // 서버 반영 대기(밀리초)
+    let AUTO_REFRESH_AFTER_POST = true;
+    let POST_REFRESH_DELAY_MS   = 600;
 
-    // ★ 콘솔에서 토글할 수 있게 함수 노출
     window.toggleAutoRefresh = function(v){
       AUTO_REFRESH_AFTER_POST = (typeof v === 'boolean') ? v : !AUTO_REFRESH_AFTER_POST;
       console.log('[CFG] AUTO_REFRESH_AFTER_POST =', AUTO_REFRESH_AFTER_POST);
@@ -245,6 +266,8 @@
         const cur = document.documentElement.getAttribute('data-theme')==='dark' ? 'dark' : 'light';
         const next = cur==='dark' ? 'light' : 'dark';
         applyTheme(next); localStorage.setItem(THEME_KEY, next);
+        // 테마 전환 시에도 위치 재계산 (시각적 변동 최소화)
+        scheduleHLRelayout();
       });
 
       function updateClock(){
@@ -328,6 +351,53 @@
         return [];
       }
 
+      /* ========= 열 전체 하이라이트 ========= */
+      let lastHLIndex = null;   // 0~6 (월~일), null=숨김
+      function hideColHL(){
+        $('#colHL').hide();
+        lastHLIndex = null;
+      }
+      function positionColHL(dayIdx){ // dayIdx: 0~6(월~일)
+        const $wrap = $('.table-wrap');
+        const $table = $wrap.find('table');
+        const $hl = $('#colHL');
+        if(!$wrap.length || !$table.length || !$hl.length){ return; }
+
+        const thIndex = dayIdx + 1; // th/td에서 '이름'이 0번째, 월이 1번째
+        const th = $table.find('thead th').get(thIndex);
+        const lastTd = $table.find('tbody tr:last-child td').get(thIndex);
+        if(!th || !lastTd){ hideColHL(); return; }
+
+        const wrapRect = $wrap[0].getBoundingClientRect();
+        const thRect   = th.getBoundingClientRect();
+        const tdRect   = lastTd.getBoundingClientRect();
+
+        const pad = 4; // 약간의 여백
+        const left   = thRect.left - wrapRect.left - pad;
+        const right  = thRect.right - wrapRect.left + pad;
+        const top    = thRect.top - wrapRect.top - pad;
+        const bottom = tdRect.bottom - wrapRect.top + pad;
+
+        $hl.css({
+          left:  left + 'px',
+          top:   top + 'px',
+          width: (right - left) + 'px',
+          height:(bottom - top) + 'px',
+          display:'block'
+        });
+        lastHLIndex = dayIdx;
+      }
+
+      // 리사이즈/글꼴 로드 등 레이아웃 변동 시 재배치
+      let relayoutTimer = null;
+      function scheduleHLRelayout(){
+        if(relayoutTimer) cancelAnimationFrame(relayoutTimer);
+        relayoutTimer = requestAnimationFrame(()=>{
+          if(lastHLIndex!=null) positionColHL(lastHLIndex);
+        });
+      }
+      $(window).on('resize', scheduleHLRelayout);
+
       function parseAndRender(raw){
         const all = getItemsFromResponse(raw);
         console.log('[render] items:', all);
@@ -351,7 +421,7 @@
 
         const today = new Date();
         const todayWeek = getISOYearWeek(today);
-        const todayIdx = mondayFirstIndex(today);
+        const todayIdx = mondayFirstIndex(today); // 0:월 ~ 6:일
 
         const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
         const marks = [Array(7).fill(0), Array(7).fill(0), Array(7).fill(0), Array(7).fill(0)];
@@ -381,13 +451,22 @@
         const maxExec = Math.max(...execBy);
         if(maxExec > 0){
           const tops = ROW_LABELS.filter((_, i) => execBy[i] === maxExec);
-          $("#thisAmount").html(`👑 ${tops.join(', ')}`);   // ★ 이름 옆 금배지 제거, 텍스트만
+          $("#thisAmount").html(`👑 ${tops.join(', ')}`);
           $kvAmount.addClass('gold-bg'); startSparkle();
         }else{
           $("#thisAmount").text('—');
           $kvAmount.removeClass('gold-bg spark glint'); stopSparkle();
         }
 
+        // ▼ 오늘 요일 열 전체 하이라이트 (이번 주일 때만)
+        if(targetWeek === todayWeek){
+          // DOM 업데이트 후 위치 계산
+          requestAnimationFrame(()=> positionColHL(todayIdx));
+        }else{
+          hideColHL();
+        }
+
+        // 표 바디 마크 렌더링
         for(let i=0;i<4;i++){
           const rowId = ["thisRow1","thisRow2","thisRow3","thisRow4"][i];
           const $tr = $("#"+rowId);
@@ -397,17 +476,17 @@
           $tr.toggleClass('goal', weeklyCount >= 3);
 
           for(let d=0; d<7; d++){
-            let cellHtml = markNA();
+            let inner = 'NA';
             if(targetWeek < todayWeek){
-              cellHtml = marks[i][d] ? markDone() : markMiss();
+              inner = marks[i][d] ? markDone() : markMiss();
             }else if(targetWeek === todayWeek){
-              if(d < todayIdx){ cellHtml = marks[i][d] ? markDone() : markMiss(); }
-              else if(d === todayIdx){ cellHtml = marks[i][d] ? markDone() : markNA(); }
-              else { cellHtml = marks[i][d] ? markDone() : markNA(); }
+              if(d < todayIdx){ inner = marks[i][d] ? markDone() : markMiss(); }
+              else if(d === todayIdx){ inner = marks[i][d] ? markDone() : markNA(); }
+              else { inner = marks[i][d] ? markDone() : markNA(); }
             }else{
-              cellHtml = marks[i][d] ? markDone() : markNA();
+              inner = marks[i][d] ? markDone() : markNA();
             }
-            $tds.eq(d+1).html(cellHtml);
+            $tds.eq(d+1).html(inner);
           }
         }
       }
@@ -418,6 +497,7 @@
         $("#thisDays").text(0);
         $("#thisAmount").text('—');
         $('#kvAmount').removeClass('gold-bg spark glint'); stopSparkle();
+        hideColHL();
         for(let i=0;i<4;i++){ setRowByIdx(i); }
       }
 
@@ -493,7 +573,6 @@
           });
           $('#memo').val('');
 
-          // ★ POST 후 자동 재조회(지연 포함)
           if(AUTO_REFRESH_AFTER_POST){
             const $r = $('#btnRefresh'); $r.prop('disabled', true).addClass('spin');
             setTimeout(()=> {
