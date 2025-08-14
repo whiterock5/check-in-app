@@ -1,323 +1,530 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>출석체크</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
-          integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <!-- canvas-confetti 라이브러리 -->
+
+  <!-- jQuery & Confetti -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
   <style>
-    /* Reset */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root{
+      --bg:#f7f8fa; --ink:#111827; --muted:#6b7280; --accent:#2563EB;
+      --card-bg:#ffffff; --card-border:rgba(17,24,39,0.10);
+      --input-bg:#ffffff; --input-border:#d1d5db;
+      --btn-bg:var(--accent); --btn-bg-hover:#1D4ED8;
+      --toast-bg:rgba(17,24,39,0.9);
+      --thead-bg:rgba(17,24,39,0.06);
+      --ok:#16a34a; --miss:#1D4ED8; --muted-ink:#6b7280;
+      --goal-bg:#fff7e6; --goal-border:#fcd34d;
+    }
+    [data-theme="dark"]{
+      --bg:#0c1420; --ink:#e5e7eb; --muted:#9ca3af; --accent:#3B82F6;
+      --card-bg:#0f2436; --card-border:rgba(255,255,255,0.08);
+      --input-bg:#0f1b2a; --input-border:#334155;
+      --btn-bg:#3B82F6; --btn-bg-hover:#60A5FA;
+      --toast-bg:rgba(0,0,0,0.8);
+      --thead-bg:rgba(255,255,255,0.08);
+      --goal-bg:#2b1f00; --goal-border:#a37d1a;
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-                   Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-      font-size: 14px;
-      line-height: 1.6;
-      background: #0c1926; 
-      color: #fff;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,Cantarell,"Open Sans","Helvetica Neue",sans-serif;
+      font-size:14px; line-height:1.6; background:var(--bg); color:var(--ink);
+      min-height:100vh; padding:20px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
     }
 
+    .header-area{position:relative; width:100%; max-width:900px; margin:4px 0 12px;}
+    .brand{ display:inline-block; text-decoration:none; color:var(--accent); font-weight:800; font-size:24px; letter-spacing:.3px; }
 
-    .header-area {
-      position: absolute;
-      top: 20px;
-      width: 100%;
-      text-align: center;
-      margin-top: 20px;
+    .top-right{
+      position:fixed; top:14px; right:14px; z-index:1000; display:flex; align-items:center; gap:10px;
+    }
+    .clock{
+      background:var(--card-bg); color:var(--ink); border:1px solid var(--card-border); border-radius:999px;
+      padding:8px 12px; font-weight:800; font-variant-numeric:tabular-nums; box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    }
+    .theme-toggle{
+      display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
+      background:var(--card-bg); color:var(--ink); border:1px solid var(--card-border);
+      cursor:pointer; user-select:none; font-weight:600; font-size:13px; box-shadow:0 2px 6px rgba(0,0,0,0.15);
+    }
+    .theme-toggle:active{transform:translateY(1px);}
+
+    .container{
+      background:var(--card-bg); color:var(--ink); max-width:900px; width:100%;
+      padding:25px; border-radius:12px; border:1px solid var(--card-border); box-shadow:0 2px 6px rgba(0,0,0,0.2);
+    }
+    #contact h3{color:var(--accent); font-size:24px; font-weight:700; text-align:left; margin-bottom:12px;}
+    #contact h4{font-size:14px; color:var(--muted); margin-bottom:18px;}
+    fieldset{border:none; margin-bottom:12px; padding:0;}
+    #contact input, #contact textarea{
+      width:100%; border:1px solid var(--input-border); background:var(--input-bg);
+      padding:14px 12px; border-radius:10px; font-size:16px; color:var(--ink); transition:border-color .2s;
+    }
+    #contact input:hover, #contact textarea:hover{border-color:#a3a3a3;}
+    #contact input[placeholder="이름"]{ height:52px; font-weight:600; }
+    #contact textarea{ height:180px; resize:vertical; }
+    #contact button{
+      width:100%; min-height:48px; padding:12px; background:var(--btn-bg); color:#fff; border:none; border-radius:10px;
+      font-size:16px; cursor:pointer; transition:background .2s; font-weight:800; display:flex; align-items:center; justify-content:center;
+    }
+    #contact button:hover{ background:var(--btn-bg-hover); }
+    #contact button:active{ box-shadow:inset 0 1px 3px rgba(0,0,0,.4); }
+    .spinner{display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,0.6); border-radius:50%; border-top-color:#fff; animation:spin .6s linear infinite;}
+    @keyframes spin{ to{ transform:rotate(360deg); } }
+
+    #toast{
+      position:fixed; bottom:50px; left:50%; transform:translateX(-50%);
+      background:var(--toast-bg); color:#fff; padding:10px 20px; border-radius:6px; font-size:14px; display:none; z-index:9999;
     }
 
-    .shapes-container {
-      display: inline-flex;
-      align-items: center;
-      margin-bottom: 10px;
-      text-decoration-line : none;
+    .cards-wrap{ max-width:900px; width:100%; margin-top:16px; }
+    .card{ background:var(--card-bg); color:var(--ink); border:1px solid var(--card-border); border-radius:12px; padding:16px; margin-top:16px; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
+    .card .hd{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; }
+    .card .title{ font-weight:800; font-size:18px; }
+
+    .refresh-btn{ display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:999px; border:1px solid var(--card-border); background:var(--card-bg); color:var(--ink); cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
+    .refresh-btn svg{ width:18px; height:18px; }
+    .refresh-btn:disabled{ opacity:.6; cursor:not-allowed; }
+    .spin svg{ animation:rot .9s linear infinite; }
+    @keyframes rot { to { transform:rotate(360deg); } }
+
+    .kvs{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+    .kv{ background:var(--thead-bg); border-radius:10px; padding:10px; position:relative; }
+    .kv .k{ font-size:12px; opacity:.9; }
+    .kv .v{ font-size:20px; font-weight:800; margin-top:4px; }
+
+    .card table{ width:100%; border-collapse:collapse; overflow:hidden; border-radius:8px; }
+    .card thead th{ font-weight:700; font-size:12px; text-align:center; padding:8px 4px; background:var(--thead-bg); }
+    .card tbody td{ text-align:center; padding:8px 4px; border-top:1px solid var(--card-border); font-feature-settings:"tnum"; }
+    .card tbody td:first-child{ text-align:left; padding-left:10px; font-weight:700; }
+
+    .mark{ display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; margin:auto; border-radius:6px; font-weight:900; line-height:1; }
+    .mark.done{ background:rgba(22,163,74,.12); border:1px solid rgba(22,163,74,.45); color:var(--ok); }
+    .mark.miss{ background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.45); color:var(--miss); }
+    .mark.na{ background:transparent; border:1px dashed rgba(107,114,128,.35); color:var(--muted-ink); }
+
+    .goal{ background:var(--goal-bg); }
+    .goal td{ border-top-color:var(--goal-border); }
+
+    /* Amount 박스 금딱지(배경만) + 자연스러운 이펙트 */
+    #kvAmount.gold-bg{
+      overflow:hidden;
+      background: linear-gradient(180deg,#ffeaa3 0%,#f5c542 100%);
+      border:1px solid rgba(122,79,0,.35);
+      box-shadow: 0 1px 3px rgba(0,0,0,.15), inset 0 1px 1px rgba(255,255,255,.6);
+    }
+    #kvAmount.gold-bg .k, #kvAmount.gold-bg .v { color:#3a2a00; }
+    #kvAmount.gold-bg::before{
+      content:""; pointer-events:none; position:absolute; inset:0;
+      background:linear-gradient(120deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.10) 18%, rgba(255,255,255,0.04) 36%, transparent 60%);
+      transform:translateX(-120%); opacity:0;
+    }
+    #kvAmount.gold-bg.glint::before{ opacity:.16; animation:glint 1.4s ease-out forwards; }
+    @keyframes glint{
+      0%{ transform:translateX(-120%); opacity:.0; }
+      15%{ opacity:.18; }
+      100%{ transform:translateX(120%); opacity:0; }
+    }
+    #kvAmount.gold-bg.spark::after{
+      content:""; pointer-events:none; position:absolute;
+      top:var(--spark-top,-12%); left:-12%; width:var(--spark-w,28%); height:150%;
+      background:linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,var(--spark-o,.7)), rgba(255,255,255,0));
+      transform:skewX(-18deg); filter: blur(.6px);
+      animation:slash 0.7s ease-out forwards;
+    }
+    @keyframes slash{
+      0%   { transform:translateX(0)   skewX(-18deg); opacity:0; }
+      12%  { opacity:1; }
+      100% { transform:translateX(210%) skewX(-18deg); opacity:0; }
     }
 
-    /* 동그라미, 세모, 네모 CSS로 구현 */
-    .circle, .triangle, .square {
-      margin: 0 10px;
-    }
-
-    .circle {
-      width: 50px;
-      height: 50px;
-      background-color: #ff0080; /* 분홍/자주색 계열 */
-      border-radius: 50%;
-    }
-
-    .triangle {
-      width: 0;
-      height: 0;
-      border-left: 25px solid transparent;
-      border-right: 25px solid transparent;
-      border-bottom: 50px solid #ff0080;
-    }
-
-    .square {
-      width: 50px;
-      height: 50px;
-      background-color: #ff0080;
-    }
-
-    /* PLAY GAME 텍스트 */
-    .play-game {
-      font-size: 24px;
-      font-weight: 600;
-      color: #ff0080;
-      margin-bottom: 5px;
-      text-decoration-line : none;
-    }
-
-    /* 메인 컨테이너 (폼) */
-    .container {
-      background: #f9f9f9;
-      max-width: 400px;
-      width: 90%;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      color: #333; /* 폼 안쪽 텍스트 컬러 */
-    }
-
-    #contact h3 {
-      color: #ff0080;
-      font-size: 24px;
-      font-weight: 500;
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    #contact h4 {
-      font-size: 14px;
-      text-align: center;
-      color: #555;
-      margin-bottom: 15px;
-    }
-
-    fieldset {
-      border: none;
-      margin-bottom: 12px;
-      padding: 0;
-    }
-
-    /* 입력 필드 및 버튼 스타일 */
-    #contact input,
-    #contact textarea {
-      width: 100%;
-      border: 1px solid #CCC;
-      background: #FFF;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 16px;
-      transition: border-color 0.3s;
-      color: #333;
-    }
-
-    #contact input:hover,
-    #contact textarea:hover {
-      border-color: #AAA;
-    }
-
-    #contact textarea {
-      height: 100px;
-      resize: none;
-    }
-
-    #contact button {
-      width: 100%;
-      min-height: 45px;
-      padding: 12px;
-      background: #ff0080;
-      color: #FFF;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #contact button:hover {
-      background: #e60073;
-    }
-
-    #contact button:active {
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
-    }
-
-    /* Spinner 스타일 */
-    .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255, 255, 255, 0.6);
-      border-radius: 50%;
-      border-top-color: #fff;
-      animation: spin 0.6s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Toast 스타일 */
-    #toast {
-      position: fixed;
-      bottom: 50px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.8);
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 4px;
-      font-size: 14px;
-      display: none;
-      z-index: 9999;
-    }
-
-    /* 모바일 반응형 */
-    @media (max-width: 480px) {
-      .container {
-        width: 95%;
-        padding: 20px;
-      }
-      #contact button {
-        font-size: 14px;
-        min-height: 40px;
-      }
-    }
-
-    #time {
-      font-weight: bold;
-      font-size: 15px;
+    @media (max-width:480px){
+      .kvs{ grid-template-columns:1fr; }
+      .brand{ font-size:20px; }
+      .clock{ padding:6px 10px; font-size:13px; }
+      .theme-toggle{ font-size:12px; padding:6px 10px; }
     }
   </style>
 </head>
 <body>
-  <div class="header-area">
-    <a class="shapes-container"  href='https://my411844.s4hana.cloud.sap/sap/bc/adt/businessservices/odatav2/feap/ni%5DsYlYfW%5DgYshDJ77Y%C2%8Cy%C2%86w%7D%C2%87y77%C2%88%C2%83sW%7Cu%C2%86%C2%88TT%C2%88%C2%83sW%7C%7D%C2%80xTT%C2%88%C2%83sW%C2%83%C2%89%C2%82%C2%8877Y%C2%8Cy%C2%86w%7D%C2%87yW%C2%83%C2%89%C2%82%C2%88TT%60%C2%83%7BTTY%C2%8Cy%C2%86w%7D%C2%87yW%C2%83%C2%89%C2%82%C2%8877ni%5DsYlYfW%5DgYshDJsjUb77DDDE/flp.html?sap-ui-xx-viewCache=false&sap-ui-language=EN&sap-client=080#app-preview&/?sap-iapp-state=TASG5LIGW02F43KXK45K35JO58LWA9I9C7PRR2YDQ&sap-iapp-state--history=TASMVB14QGKGFK2NCSJJSE7TMSBCNAL9BNV3GDS3W'>
-      <div class="circle"></div>
-      <div class="triangle"></div>
-      <div class="square"></div>
-    </a>
-    <div class="play-game">PLAY EXERCISE</div>
+  <div class="top-right">
+    <div class="clock" id="clock">—:—:—</div>
+    <button class="theme-toggle" id="themeToggle" title="테마 전환">☀️ Light</button>
   </div>
 
-  <!-- 메인 폼 영역 -->
+  <div class="header-area">
+    <a class="brand" href="#">주간 운동 기록 앱</a>
+  </div>
+
   <div class="container">
     <form id="contact" action="" method="post">
-      <h3>Exercise LOG</h3>
-      <h4>운동을 하세요.</h4>
-      <fieldset>
-        <input placeholder="Name" type="text" required autofocus>
-      </fieldset>
-      <fieldset>
-        <div>현재시간은...</div>
-        <div id="time"></div>
-      </fieldset>
-      <fieldset>
-        <textarea placeholder="memo" id="memo" required></textarea>
-      </fieldset>
-      <fieldset>
-        <button type="submit" id="contact-submit">Submit</button>
-      </fieldset>
+      <h3>운동 로그 전송</h3>
+      <h4>운동 내역을 기록하고 전송하세요.</h4>
+      <fieldset><input placeholder="이름" type="text" required autofocus /></fieldset>
+      <fieldset><textarea placeholder="운동기록작성" id="memo" required></textarea></fieldset>
+      <fieldset><button type="submit" id="contact-submit">Submit</button></fieldset>
     </form>
+  </div>
+
+  <div class="cards-wrap">
+    <article class="card" id="cardThis">
+      <div class="hd">
+        <div class="title">이번 주</div>
+        <button class="refresh-btn" id="btnRefresh" type="button" title="데이터 새로고침" aria-label="데이터 새로고침">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"></path>
+            <path d="M20.49 15a9 9 0 0 1-14.13 3.36L1 14"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="bd">
+        <div class="kvs">
+          <div class="kv"><div class="k">총 수행(회)</div><div class="v" id="thisExec">0</div></div>
+          <div class="kv"><div class="k">완료 요일(개)</div><div class="v" id="thisDays">0</div></div>
+          <div class="kv" id="kvAmount"><div class="k">이번주 1등</div><div class="v" id="thisAmount">—</div></div>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>이름</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th><th>일</th></tr>
+          </thead>
+          <tbody>
+            <tr id="thisRow1"><td>오찬울</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
+            <tr id="thisRow2"><td>이정제</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
+            <tr id="thisRow3"><td>남상효</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
+            <tr id="thisRow4"><td>박병훈</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td><td>·</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
   </div>
 
   <div id="toast"></div>
 
   <script>
-    let isoTime = "";
-    $(document).ready(function(){
-      function updateTime() {
+    /* ===== 설정 ===== */
+    const API_URL = "https://ksocyokir7mlf2ayfuzfgcfqqy0nlbzm.lambda-url.ap-southeast-2.on.aws";
+    const ROW_LABELS = ["오찬울","이정제","남상효","박병훈"];
+    const NAME_TO_IDX = { "오찬울":0, "이정제":1, "남상효":2, "박병훈":3 };
+    const THEME_KEY = "pref-theme";
+
+    // ★ POST 후 자동 재조회 옵션
+    let AUTO_REFRESH_AFTER_POST = true;              // 필요시 false로 꺼도 됨
+    let POST_REFRESH_DELAY_MS   = 600;               // 서버 반영 대기(밀리초)
+
+    // ★ 콘솔에서 토글할 수 있게 함수 노출
+    window.toggleAutoRefresh = function(v){
+      AUTO_REFRESH_AFTER_POST = (typeof v === 'boolean') ? v : !AUTO_REFRESH_AFTER_POST;
+      console.log('[CFG] AUTO_REFRESH_AFTER_POST =', AUTO_REFRESH_AFTER_POST);
+    };
+    window.setPostDelay = function(ms){
+      POST_REFRESH_DELAY_MS = +ms || 0;
+      console.log('[CFG] POST_REFRESH_DELAY_MS =', POST_REFRESH_DELAY_MS);
+    };
+
+    $(function(){
+
+      function applyTheme(t){
+        document.documentElement.setAttribute('data-theme', t);
+        $('#themeToggle').text(t==='dark' ? '🌙 Dark' : '☀️ Light');
+        $('#themeToggle').attr('title', t==='dark' ? '라이트 모드로 전환' : '다크 모드로 전환');
+      }
+      (function initTheme(){
+        const saved = localStorage.getItem(THEME_KEY);
+        if(saved){ applyTheme(saved); }
+        else{ const h = new Date().getHours(); applyTheme(h >= 20 ? 'dark' : 'light'); }
+      })();
+      $('#themeToggle').on('click', function(){
+        const cur = document.documentElement.getAttribute('data-theme')==='dark' ? 'dark' : 'light';
+        const next = cur==='dark' ? 'light' : 'dark';
+        applyTheme(next); localStorage.setItem(THEME_KEY, next);
+      });
+
+      function updateClock(){
         const now = new Date();
-
-        // 화면에 보여줄 포맷: YYYY년 MM월 DD일 오전/오후 HH:MM:SS
-        const year = now.getFullYear();
-        const month = ('0' + (now.getMonth() + 1)).slice(-2);
-        const day = ('0' + now.getDate()).slice(-2);
-        let hours = now.getHours();
-        const minutes = ('0' + now.getMinutes()).slice(-2);
-        const seconds = ('0' + now.getSeconds()).slice(-2);
-        const period = hours < 12 ? "오전" : "오후";
-        hours = hours % 12;
-        if(hours === 0) hours = 12;
-        const displayHours = ('0' + hours).slice(-2);
-        const displayTime = `${year}년 ${month}월 ${day}일 ${period} ${displayHours}:${minutes}:${seconds}`;
-        $("#time").text(displayTime);
-
-        // 서버로 전송할 시간은 ISO 형식으로
-        isoTime = now.toISOString().split('.')[0] + "Z";
+        let h = now.getHours();
+        const period = h < 12 ? "오전" : "오후";
+        h = h % 12; if(h===0) h = 12;
+        const hh = ('0'+h).slice(-2);
+        const mm = ('0'+now.getMinutes()).slice(-2);
+        const ss = ('0'+now.getSeconds()).slice(-2);
+        $('#clock').text(`${period} ${hh}:${mm}:${ss}`);
       }
-      updateTime();
-      setInterval(updateTime, 1000);
+      updateClock(); setInterval(updateClock, 1000);
 
-      // 토스트 메시지 함수
-      function showToast(message) {
-        $("#toast").text(message).fadeIn(300).delay(2000).fadeOut(300);
+      function showToast(msg){ $("#toast").text(msg).fadeIn(200).delay(1800).fadeOut(200); }
+      function setRowByIdx(idx){
+        const rowId = ["thisRow1","thisRow2","thisRow3","thisRow4"][idx];
+        const $tds = $("#"+rowId).find("td");
+        for(let i=0;i<7;i++){ $tds.eq(i+1).html(`<span class="mark na">·</span>`); }
       }
+      function withCacheBuster(url){ return url + (url.includes('?') ? '&' : '?') + '_=' + Date.now(); }
+
+      function getISOYearWeek(date){
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        const weekNo = Math.ceil((((d - yearStart)/86400000)+1)/7);
+        const year = d.getUTCFullYear();
+        return `${year}${String(weekNo).padStart(2,'0')}`;
+      }
+      function mondayFirstIndex(date){ return (date.getDay() + 6) % 7; }
+
+      function markDone(){ return `<span class="mark done">✓</span>`; }
+      function markMiss(){ return `<span class="mark miss">×</span>`; }
+      function markNA(){ return `<span class="mark na">·</span>`; }
+
+      // 금딱지 이펙트
+      let fxTimer = null;
+      function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+      function queueFX(){
+        clearTimeout(fxTimer);
+        fxTimer = setTimeout(()=>{
+          const $box = $('#kvAmount');
+          const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if(!prefersReduced){
+            if(Math.random() < 0.6){
+              $box.addClass('glint');
+              setTimeout(()=> $box.removeClass('glint'), 1500);
+            }else{
+              const el = $box[0];
+              if(el && el.style){
+                el.style.setProperty('--spark-w', rand(22,32)+'%');
+                el.style.setProperty('--spark-top', (-rand(8,16))+'%');
+                el.style.setProperty('--spark-o', (rand(50,80)/100).toString());
+              }
+              $box.addClass('spark');
+              setTimeout(()=> $box.removeClass('spark'), 800);
+            }
+          }
+          queueFX();
+        }, rand(8000, 20000));
+      }
+      function startSparkle(){ if(fxTimer) return; queueFX(); }
+      function stopSparkle(){ clearTimeout(fxTimer); fxTimer = null; }
+
+      function getItemsFromResponse(raw){
+        try{
+          if(!raw) return [];
+          if(Array.isArray(raw)) return raw;
+          if(raw.value && Array.isArray(raw.value)) return raw.value;
+          if(raw.body){
+            const b = (typeof raw.body === 'string') ? JSON.parse(raw.body) : raw.body;
+            if(Array.isArray(b)) return b;
+            if(b && b.value && Array.isArray(b.value)) return b.value;
+            if(b && b.Items && Array.isArray(b.Items)) return b.Items;
+          }
+          if(raw.Items && Array.isArray(raw.Items)) return raw.Items;
+          if(typeof raw === 'string'){ return getItemsFromResponse(JSON.parse(raw)); }
+        }catch(e){ console.error('[parse] 응답 정규화 실패', e, raw); }
+        return [];
+      }
+
+      function parseAndRender(raw){
+        const all = getItemsFromResponse(raw);
+        console.log('[render] items:', all);
+
+        const wanted = all.filter(it => NAME_TO_IDX.hasOwnProperty((it?.Name ?? '').trim()));
+        if(!wanted.length){ renderEmpty(); return; }
+
+        const freq = {};
+        wanted.forEach(it => {
+          const wk = String(it.YearWeek || '').trim();
+          if(!wk) return;
+          freq[wk] = (freq[wk]||0)+1;
+        });
+        const weeks = Object.keys(freq);
+        if(!weeks.length){ renderEmpty(); return; }
+
+        const targetWeek = weeks.sort((a,b)=>{ if(freq[b]!==freq[a]) return freq[b]-freq[a]; return b.localeCompare(a); })[0];
+        const sample = wanted.find(it => String(it.YearWeek).trim() === targetWeek);
+        const weekLabel = sample?.WeekInKoreanStyle ? `${targetWeek} · ${sample.WeekInKoreanStyle}` : targetWeek;
+        $('#btnRefresh').attr('title', `새로고침 · ${weekLabel}`);
+
+        const today = new Date();
+        const todayWeek = getISOYearWeek(today);
+        const todayIdx = mondayFirstIndex(today);
+
+        const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+        const marks = [Array(7).fill(0), Array(7).fill(0), Array(7).fill(0), Array(7).fill(0)];
+        const execBy = [0,0,0,0];
+        const dayAny = Array(7).fill(0);
+
+        wanted.filter(it => String(it.YearWeek).trim() === targetWeek).forEach(it => {
+          const nm = (it?.Name ?? '').trim();
+          const idx = NAME_TO_IDX[nm];
+          if(idx === undefined) return;
+
+          for(let i=0;i<7;i++){
+            const done = !!it[`IsDoneOn${DAYS[i]}`];
+            marks[idx][i] = marks[idx][i] || (done ? 1 : 0);
+            if(done) dayAny[i] = 1;
+          }
+
+          const flagsCnt = marks[idx].reduce((s,v)=>s+v,0);
+          const execVal = Number.isFinite(it?.ExerciseCount) ? it.ExerciseCount : 0;
+          execBy[idx] = Math.max(execBy[idx], Math.max(execVal, flagsCnt));
+        });
+
+        $("#thisExec").text(execBy.reduce((s,v)=>s+v,0));
+        $("#thisDays").text(dayAny.reduce((s,v)=>s+(v?1:0),0));
+
+        const $kvAmount = $('#kvAmount');
+        const maxExec = Math.max(...execBy);
+        if(maxExec > 0){
+          const tops = ROW_LABELS.filter((_, i) => execBy[i] === maxExec);
+          $("#thisAmount").html(`👑 ${tops.join(', ')}`);   // ★ 이름 옆 금배지 제거, 텍스트만
+          $kvAmount.addClass('gold-bg'); startSparkle();
+        }else{
+          $("#thisAmount").text('—');
+          $kvAmount.removeClass('gold-bg spark glint'); stopSparkle();
+        }
+
+        for(let i=0;i<4;i++){
+          const rowId = ["thisRow1","thisRow2","thisRow3","thisRow4"][i];
+          const $tr = $("#"+rowId);
+          const $tds = $tr.find("td");
+
+          const weeklyCount = marks[i].reduce((s,v)=>s+v,0);
+          $tr.toggleClass('goal', weeklyCount >= 3);
+
+          for(let d=0; d<7; d++){
+            let cellHtml = markNA();
+            if(targetWeek < todayWeek){
+              cellHtml = marks[i][d] ? markDone() : markMiss();
+            }else if(targetWeek === todayWeek){
+              if(d < todayIdx){ cellHtml = marks[i][d] ? markDone() : markMiss(); }
+              else if(d === todayIdx){ cellHtml = marks[i][d] ? markDone() : markNA(); }
+              else { cellHtml = marks[i][d] ? markDone() : markNA(); }
+            }else{
+              cellHtml = marks[i][d] ? markDone() : markNA();
+            }
+            $tds.eq(d+1).html(cellHtml);
+          }
+        }
+      }
+
+      function renderEmpty(){
+        $('#btnRefresh').attr('title', '데이터 새로고침');
+        $("#thisExec").text(0);
+        $("#thisDays").text(0);
+        $("#thisAmount").text('—');
+        $('#kvAmount').removeClass('gold-bg spark glint'); stopSparkle();
+        for(let i=0;i<4;i++){ setRowByIdx(i); }
+      }
+
+      function fetchThisWeek(){
+        const dfd = $.Deferred();
+        const url = withCacheBuster(API_URL);
+        $.ajax({
+          url, method:'GET', dataType:'json', cache:false, timeout:15000,
+          headers:{ 'Accept':'application/json' },
+          crossDomain:true
+        }).done(raw => {
+          console.groupCollapsed('%c[REFRESH][GET json] OK','color:#16a34a'); console.log(raw); console.groupEnd();
+          parseAndRender(raw); dfd.resolve();
+        }).fail((xhr, status, err) => {
+          console.warn('[REFRESH][GET json] FAIL → text fallback', status, err, xhr?.status, xhr?.responseText);
+          $.ajax({
+            url, method:'GET', dataType:'text', cache:false, timeout:15000,
+            headers:{ 'Accept':'application/json' }, crossDomain:true
+          }).done(txt => {
+            try{
+              const parsed = JSON.parse(txt);
+              console.groupCollapsed('%c[REFRESH][GET text→json] OK','color:#16a34a'); console.log(parsed); console.groupEnd();
+              parseAndRender(parsed); dfd.resolve();
+            }catch(e){
+              console.error('[REFRESH][GET text→json] parse error', e);
+              renderEmpty(); dfd.reject();
+            }
+          }).fail((xhr2, status2, err2) => {
+            console.error('[REFRESH][GET fallback] fail', status2, err2, xhr2?.status, xhr2?.responseText);
+            renderEmpty(); dfd.reject();
+          });
+        });
+        return dfd.promise();
+      }
+      window.refreshThisWeek = fetchThisWeek;
+
+      $('#btnRefresh').on('click', function(){
+        const $b = $(this);
+        $b.prop('disabled', true).addClass('spin');
+        fetchThisWeek().always(() => $b.prop('disabled', false).removeClass('spin'));
+      });
 
       $("#contact").on("submit", function(e){
         e.preventDefault();
-        var $btn = $("#contact-submit");
-        $btn.prop("disabled", true);
-        var originalBtnHtml = $btn.html();
-        $btn.html('<span class="spinner"></span>');
 
-        // 폼 데이터 수집
-        var name = $("input[placeholder='Name']").val();
-        var description = $('#memo').val();
-        var now = new Date();
-        var exerciseDate = now.getFullYear() + '-' +
-                   ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
-                   ('0' + now.getDate()).slice(-2);
+        const $btn=$("#contact-submit");
+        const original=$btn.html();
+        $btn.prop("disabled",true).html('<span class="spinner"></span>');
 
-        var dataToSend = {
-          Name : name,
-          ExerciseDate : exerciseDate,
-          description : description
-        };
+        const name=$("input[placeholder='이름']").val().trim();
+        const description=$('#memo').val().trim();
+        const now=new Date();
+        const exerciseDate = `${now.getFullYear()}-${('0'+(now.getMonth()+1)).slice(-2)}-${('0'+now.getDate()).slice(-2)}`;
 
-        console.log(dataToSend);
+        const dataToSend={ Name:name, ExerciseDate:exerciseDate, description:description };
+        console.groupCollapsed('%c[POST] sending','color:#2563eb'); console.log(dataToSend); console.groupEnd();
 
         $.ajax({
-          url: "https://t4d2bh3tpc.execute-api.ap-southeast-2.amazonaws.com/post",
+          url: API_URL,
           method: "POST",
           data: JSON.stringify(dataToSend),
-          contentType: "application/json",
-          timeout: 50000
-        }).done(function(response) {
-          var btnOffset = $btn.offset();
+          contentType: "application/json; charset=UTF-8",
+          headers: { "Accept":"application/json" },
+          timeout: 50000,
+          crossDomain: true
+        }).done(function(res, textStatus, xhr){
+          console.groupCollapsed('%c[POST] SUCCESS','color:#16a34a'); console.log('status', xhr?.status, textStatus); console.log('response', res); console.groupEnd();
+          showToast("전송완료(POST 2xx)");
+          const btnOffset=$btn.offset();
           confetti({
-            particleCount: 150,
-            spread: 70,
-            origin: {
-              x: (btnOffset.left + $btn.width()/2) / $(window).width(),
-              y: (btnOffset.top + $btn.height()/2) / $(window).height()
-            }
+            particleCount:150, spread:70,
+            origin:{ x:(btnOffset.left+$btn.width()/2)/$(window).width(), y:(btnOffset.top+$btn.height()/2)/$(window).height() }
           });
-          showToast("전송완료");
-        }).fail(function() {
+          $('#memo').val('');
+
+          // ★ POST 후 자동 재조회(지연 포함)
+          if(AUTO_REFRESH_AFTER_POST){
+            const $r = $('#btnRefresh'); $r.prop('disabled', true).addClass('spin');
+            setTimeout(()=> {
+              fetchThisWeek().always(() => $r.prop('disabled', false).removeClass('spin'));
+            }, POST_REFRESH_DELAY_MS);
+          }
+        }).fail(function(xhr, status, err){
+          console.error('[POST] FAIL', status, err, xhr?.status, xhr?.responseText);
           showToast("전송실패");
-        }).always(function() {
-          $btn.prop("disabled", false).html(originalBtnHtml);
+        }).always(function(){
+          $btn.prop("disabled",false).html(original);
         });
       });
+
+      // CORS 프리플라이트 점검
+      function checkCORS(){
+        $.ajax({ url: API_URL, method:'OPTIONS', timeout:10000, crossDomain:true })
+          .done(function(data, textStatus, xhr){
+            console.groupCollapsed('%c[CORS][OPTIONS] OK','color:#16a34a'); console.log('status', xhr?.status, textStatus); console.log(xhr.getAllResponseHeaders()); console.groupEnd();
+          }).fail(function(xhr, status, err){
+            const headers = (xhr && xhr.getAllResponseHeaders) ? xhr.getAllResponseHeaders() : '(no headers)';
+            console.error('[CORS][OPTIONS] FAIL', xhr?.status, status, err, headers);
+          });
+      }
+      window.checkCORS = checkCORS;
+
+      (function initialLoad(){
+        const $r = $('#btnRefresh');
+        $r.prop('disabled', true).addClass('spin');
+        fetchThisWeek().always(() => $r.prop('disabled', false).removeClass('spin'));
+      })();
     });
   </script>
 </body>
